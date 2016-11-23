@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="cs">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Jak dostat Yaws na Heroku</title>
+
+		<meta name="author" content="Petr Severa">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="../reveal.js-3.2.0/css/reveal.css">
+		<link rel="stylesheet" href="../reveal.js-3.2.0/css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../reveal.js-3.2.0/lib/css/zenburn.css">
+
+		<!--[if lt IE 9]>
+		<script src="../reveal.js-3.2.0/lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Jak dostat Yaws na Heroku</h1>
+          <h3>&hellip; nebo aspoň jak se to povedlo mě.</h3>
+					<p>
+						<small>Petr Severa / <a href="http://twitter.com/segedacz">@segedacz</a></small>
+					</p>
+				</section>
+
+        <section>
+          <h2>Motivace</h2>
+          <p>Máme suprdupr webovou aplikaci napsanou pro Yaws a chceme ji hostovat na Heroku.</p>
+          <div class="fragment">
+            <h3>TL;DR</h3>            
+          </div>
+          <ol>
+            <div class="fragment">
+              <li>Heroku umí Erlang pomocí buildpacku. To jde použít jen pro embedded mode. To nechceme.</li>            
+            </div>
+            <div class="fragment">
+              <li>Heroku umí Docker. I když zatím jen v &beta;.</li>            
+            </div>
+            <div class="fragment">
+              <li>Zdokerizujeme naši aplikaci.</li>            
+            </div>
+          </ol>
+				</section>
+
+        <section>
+          <h2>Yaws - Yet another webserver</h2>
+          <div><a href="http://yaws.hyber.org/" title="Yaws">yaws.hyber.org</a></div>
+          <blockquote>
+            &ldquo;Yaws is a HTTP high perfomance 1.1 webserver particularly well suited for dynamic-content web applications.&rdquo;
+          </blockquote>
+          <dl>
+            <div class="fragment">
+              <dt>Standalone mode</dt><dd>webserver běží jako běžná služba</dd>
+            </div>
+            <div class="fragment">
+              <dt>Embedded mode</dt><dd>běží jako vložený webserver běžné Erlang aplikace</dd>
+            </div>
+          </dl>          
+        </section>
+
+        <section>
+          <h2>Erlang/OTP</h2>
+          <div><a href="https://www.erlang.org/" title="Erlang Programming Language">erlang.org</a></div>
+          <ul>
+            <div class="fragment">
+              <li>funkcionální</li>
+            </div>
+            <div class="fragment">
+              <li>paralelní - actor model</li>
+            </div>
+            <div class="fragment">
+              <li>dynamický silně typovaný</li>
+            </div>
+            <div class="fragment">
+              <li>Open Telecom Platform - sada knihoven, návrhových vzorů a middle-ware</li>
+            </div>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Heroku</h2>
+          <div><a href="https://www.heroku.com/" title="Cloud Application Platform">heroku.com</a></div>
+          <p>PaaS</p>
+          <ul>
+            <div class="fragment">
+              <li>Node.js, Ruby, Java, PHP, Python, Go, Scala, Clojure</li>
+            </div>
+            <div class="fragment">
+              <li>buildpacky</li>
+            </div>
+            <div class="fragment">
+              <li>docker image</li>
+            </div>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Docker</h2>
+          <div><a href="https://www.docker.com/" title="Docker - Build, Ship, and Run Any App, Anywhere">docker.com</a></div>
+          <p>kontejnerová virtualizace aplikací</p>
+          <div class="fragment">
+            <pre><code class="docker" data-trim>
+FROM segeda/yaws:2.0.4-slim
+
+RUN useradd -m myuser
+
+ADD ./config  /opt/config
+RUN chown -R myuser /opt/config
+
+RUN mkdir /var/log/yaws
+RUN chown -R myuser /var/log/yaws
+
+ADD ./webapp /opt/webapp
+WORKDIR /opt/webapp
+
+USER myuser
+
+CMD /opt/config/entrypoint.sh
+            </code></pre>
+          </div>
+          <div class="fragment">
+            <pre><code class="docker" data-trim>$ docker build &hellip;</code></pre>
+          </div>          
+          <div class="fragment">
+            <pre><code class="docker" data-trim>$ docker run &hellip;</code></pre>
+          </div>          
+        </section>
+
+      </div>
+
+		</div>
+
+		<script src="../reveal.js-3.2.0/lib/js/head.min.js"></script>
+		<script src="../reveal.js-3.2.0/js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'none', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../reveal.js-3.2.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal.js-3.2.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
